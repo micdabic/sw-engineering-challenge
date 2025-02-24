@@ -38,7 +38,7 @@ class BloqRoutes {
             }
         });
 
-        this.router.post("/create", async (req: Request, res: Response, next: any) => {
+        this.router.post("/", async (req: Request, res: Response, next: any) => {
             try {
                 const { title, address } = req.body;
 

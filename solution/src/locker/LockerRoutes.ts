@@ -38,7 +38,7 @@ export default class LockerRoutes {
             }
         });
 
-        this.router.post("/create", async (req: Request, res: Response, next: NextFunction) => {
+        this.router.post("/", async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { bloqId } = req.body;
 
