@@ -35,7 +35,7 @@ describe("RentService", () => {
 
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockRent);
-        expect(rentRepository.Create).toHaveBeenCalledWith(expect.any(RentModel));
+        expect(rentRepository.Create).toHaveBeenCalledWith(mockRent);
     });
 
     test("AssignLocker: should return an error if rent is not found when assigning a locker", () => {
