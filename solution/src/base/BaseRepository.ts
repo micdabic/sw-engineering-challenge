@@ -1,4 +1,4 @@
-import { IBaseRepository } from "../interfaces/IBaseRepository";
+import { IBaseRepository } from "./interface/IBaseRepository";
 import { BaseEntity } from "./BaseEntity";
 
 export default abstract class BaseRepository<T extends BaseEntity> implements IBaseRepository<T>{

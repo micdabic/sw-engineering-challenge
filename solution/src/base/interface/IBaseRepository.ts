@@ -1,4 +1,4 @@
-import { BaseEntity } from "../base/BaseEntity";
+import { BaseEntity } from "../BaseEntity";
 
 export interface IBaseRepository<T extends BaseEntity> {
     GetAll(): T[];

@@ -1,5 +1,4 @@
-import { RentModel, RentStatus } from "../RentModel";
-import DeliveredState from "./DeliveredState";
+import { RentStatus } from "../RentModel";
 import RentState from "./RentState"
 
 export default class WaitingPickUpState extends RentState {

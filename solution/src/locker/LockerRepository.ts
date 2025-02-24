@@ -1,7 +1,8 @@
 import BaseRepository from "../base/BaseRepository";
 import {LockerModel, LockerStatus} from "./LockerModel";
+import ILockerRepository from "./interface/ILockerRepository";
 
-export default class LockerRepository extends BaseRepository<LockerModel> {
+export default class LockerRepository extends BaseRepository<LockerModel> implements ILockerRepository {
     
     constructor(){
         var lockers = [

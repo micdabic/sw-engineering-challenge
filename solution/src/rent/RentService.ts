@@ -1,27 +1,24 @@
-import RentRepository from "./RentRepository";
 import BaseService from "../base/BaseService";
-import {RentModel, RentSize, RentStatus} from "./RentModel";
+import {RentModel, RentStatus} from "./RentModel";
 import WaitingDropOffState from "./rentState/WaitingDropOffState";
 import WaitingPickUpState from "./rentState/WaitingPickUpState";
 import DeliveredState from "./rentState/DeliveredState";
 import RentStateContext from "./rentState/RentStateContext";
+import { CreateRentDTO } from "./dto/CreateRentDTO";
+import IRentService from "./interface/IRentService";
+import IRentRepository from "./interface/IRentRepository";
+import { Result } from "../types/Result";
+import { RENT_ERROR } from "./RentErrors";
 
-type CreateRentDTO = {
-    lockerId: string,
-    weight: number,
-    size: RentSize        
-}
+export default class RentService extends BaseService<RentModel> implements IRentService {
+    RentRepository: IRentRepository;
 
-export default class RentService extends BaseService<RentModel> {
-    RentRepository: RentRepository;
-
-    constructor(RentRepository: RentRepository){
+    constructor(RentRepository: IRentRepository){
         super(RentRepository);
         this.RentRepository = RentRepository;
     }
     
-    
-    CreateRent(createRentDTO: CreateRentDTO): RentModel {
+    CreateRent(createRentDTO: CreateRentDTO): Result<RentModel> {
         const newRent = new RentModel(
             crypto.randomUUID(),
             null,
@@ -32,44 +29,63 @@ export default class RentService extends BaseService<RentModel> {
         
         var rentContext = new RentStateContext(newRent);
         rentContext.state.Notify();
-        return this.repository.Create(newRent);
+
+        var createdRent = this.repository.Create(newRent);
+        
+        return { success: true, data: createdRent };
+
     }
 
-    AssignLocker(rentId: string, lockerId: string): RentModel | null{
+    //Possibly delegate this responsability to scheduler
+    AssignLocker(rentId: string, lockerId: string): Result<RentModel> {
         var rent = this.GetById(rentId);
-
-        if(rent != undefined){
-            rent.lockerId = lockerId;
-            var rentContext = new RentStateContext(rent);
-            rentContext.ChangeState(new WaitingDropOffState());
-            return this.repository.Save(rent);
+        
+        if (!rent) {
+            return { success: false, error: RENT_ERROR.RENT_NOT_FOUND };
         }
 
-        return null;
+        rent.lockerId = lockerId;
+        var rentContext = new RentStateContext(rent);
+        rentContext.ChangeState(new WaitingDropOffState());
+        this.repository.Save(rent);
+        
+        return { success: true, data: rent };
        
     }
 
-    DropOff(rentId: string): boolean {
-        var rent = this.GetById(rentId);
-        
-        if(rent != undefined && rent.status == RentStatus.WAITING_DROPOFF){
-            var rentContext = new RentStateContext(rent);
-            rentContext.ChangeState(new WaitingPickUpState());
-            return true;
-        }
+    DropOff(rentId: string): Result<RentModel> {
+        const rent = this.GetById(rentId);
 
-        return false;
+        if (!rent) {
+            return { success: false, error: RENT_ERROR.RENT_NOT_FOUND };
+        }
+    
+        if (rent.status !== RentStatus.WAITING_DROPOFF) {
+            return { success: false, error: RENT_ERROR.INVALID_RENT_STATE };
+        }
+    
+        const rentContext = new RentStateContext(rent);
+        rentContext.ChangeState(new WaitingPickUpState());
+        this.repository.Save(rent);
+    
+        return { success: true, data: rent };
     }
 
-    PickUp(rentId: string): boolean {
-        var rent = this.GetById(rentId);
+    PickUp(rentId: string): Result<RentModel> {
+        const rent = this.GetById(rentId);
 
-        if(rent != undefined && rent.status == RentStatus.WAITING_PICKUP){
-            var rentContext = new RentStateContext(rent);
-            rentContext.ChangeState(new DeliveredState());
-            return true;
+        if (!rent) {
+            return { success: false, error: RENT_ERROR.RENT_NOT_FOUND };
         }
+    
+        if (rent.status !== RentStatus.WAITING_PICKUP) {
+            return { success: false, error: RENT_ERROR.INVALID_RENT_STATE };
+        }
+    
+        const rentContext = new RentStateContext(rent);
+        rentContext.ChangeState(new DeliveredState());
+        this.repository.Save(rent);
 
-        return false;
+        return { success: true, data: rent };
     }
 }

@@ -1,7 +1,7 @@
-import { BaseEntity } from "../base/BaseEntity";
+import { BaseEntity } from "../BaseEntity";
 
 export default interface IBaseService<T extends BaseEntity>{
     GetAll(): T[];
     GetById(id: string): T | undefined;
-    Create(entity: T): T;
+    //Create(entity: T): T;
 }

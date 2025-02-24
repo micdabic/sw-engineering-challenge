@@ -1,7 +1,8 @@
 import BaseRepository from "../base/BaseRepository";
 import {RentModel, RentStatus, RentSize} from "./RentModel";
+import IRentRepository from "./interface/IRentRepository";
 
-export default class RentRepository extends BaseRepository<RentModel> {
+export default class RentRepository extends BaseRepository<RentModel> implements IRentRepository {
     
     constructor(){
         var rents = [
@@ -40,7 +41,7 @@ export default class RentRepository extends BaseRepository<RentModel> {
         rents.forEach(element => {
             rentEntities.push(new RentModel(
                 element.id,
-                element.lockerId, //TODO think about this
+                element.lockerId,
                 element.weight,
                 RentSize[element.size as keyof typeof RentSize],
                 RentStatus[element.status as keyof typeof RentStatus]))

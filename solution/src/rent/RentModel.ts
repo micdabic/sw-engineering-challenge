@@ -1,7 +1,4 @@
 import { BaseEntity } from "../base/BaseEntity";
-import CreateState from "./rentState/CreatedState";
-import RentState from "./rentState/RentState";
-import WaitingDropOffState from "./rentState/WaitingDropOffState";
 
 export enum RentStatus {
     CREATED,
@@ -17,13 +14,6 @@ export enum RentSize {
     L,
     XL,
 }
-
-const stateMap: Record<RentStatus, new () => RentState> = {
-    [RentStatus.CREATED]: CreateState,
-    [RentStatus.WAITING_DROPOFF]: WaitingDropOffState,
-    [RentStatus.WAITING_PICKUP]: CreateState,
-    [RentStatus.DELIVERED]: CreateState
-  };
 
 export class RentModel extends BaseEntity {
     lockerId: string | null;

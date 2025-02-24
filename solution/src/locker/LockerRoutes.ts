@@ -1,55 +1,56 @@
-import { Router, Request, Response} from "express";
-import LockerService from "./LockerService";
-import { LockerModel, LockerStatus } from "./LockerModel";
+import { Router, Request, Response, NextFunction} from "express";
+import { LockerModel } from "./LockerModel";
+import ILockerService from "./interface/ILockerService";
 
 export default class LockerRoutes {
     router = Router();
-    lockerService : LockerService;
+    lockerService : ILockerService;
 
-    constructor(LockerService: LockerService) {
+    constructor(LockerService: ILockerService) {
         this.lockerService = LockerService;
         
-        this.router.get("/", async (req: Request, res: Response) => {
-            var lockers : LockerModel[] = await this.lockerService.GetAll();
-
-            res.send(lockers);
-        });
-
-        this.router.get("/:id", async (req: Request, res: Response) => {
-            const lockerId = req.params.id;
-        
-            if (!lockerId) {
-                res.status(400).json({ message: "Locker ID is required" });
-            }
-
-            const locker: LockerModel | undefined = await this.lockerService.GetById(lockerId);
-
-            if (!locker) {
-                res.status(404).json({ message: "Locker not found" });
-            }
-
-            res.json(locker);
-        });
-
-        this.router.post("/create", async (req: Request, res: Response) => {
+        this.router.get("/", async (req: Request, res: Response, next: NextFunction) => {
             try {
-                console.log(req.body)
+                var lockers : LockerModel[] = await this.lockerService.GetAll();
+                res.send(lockers);
+            } catch(err) {
+                next(err);
+            }
+        });
+
+        this.router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const lockerId = req.params.id;
+        
+                if (!lockerId) {
+                    res.status(400).json({ message: "Invalid LockerId" });
+                }
+    
+                const locker: LockerModel | undefined = await this.lockerService.GetById(lockerId);
+    
+                if (!locker) {
+                    res.status(404).json({ message: "Locker not found" });
+                }
+    
+                res.status(200).json(locker);
+            } catch(err) {
+                next(err);
+            }
+        });
+
+        this.router.post("/create", async (req: Request, res: Response, next: NextFunction) => {
+            try {
                 const { bloqId } = req.body;
 
-                //TODO: hand this responsability to the service
-                const newLocker = new LockerModel(
-                    crypto.randomUUID(),
-                    bloqId,
-                    LockerStatus.OPEN,
-                    false
-                );
+                if (!bloqId) {
+                    res.status(400).json({ message: "Invalid BloqId" });
+                }
 
-                const createdLocker = await this.lockerService.Create(newLocker);
+                const createdLocker = await this.lockerService.CreateLocker(bloqId);
 
                 res.status(201).json(createdLocker);
-            } catch (error) {
-                console.error(error);
-                res.status(500).json({ message: "Internal Server Error", error });
+            } catch (err) {
+                next(err);
             }
         });
     }

@@ -1,7 +1,8 @@
 import BaseRepository from "../base/BaseRepository";
 import BloqModel from "./BloqModel";
+import IBloqRepository from "./interface/IBloqRepository";
 
-export default class BloqRepository extends BaseRepository<BloqModel> {
+export default class BloqRepository extends BaseRepository<BloqModel> implements IBloqRepository {
     
     constructor(){
         var bloqs = [
